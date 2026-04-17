@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+venv/
+.venv/
+tutor_agent_venv/
+
+# Environment files
+.env
+.env.prod
+.env.local
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Logs & temp
+*.log
+*.tmp
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+
+# Django (legacy entries)
+db.sqlite3
+staticfiles/
