@@ -38,7 +38,7 @@ class ChatResponse(BaseModel):
     session_id: str
     response: str
     corrected: str
-    errors: list[str]
+    errors: list[dict]
     history: list[dict[str, Any]]
 
 

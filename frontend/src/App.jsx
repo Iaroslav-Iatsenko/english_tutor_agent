@@ -110,7 +110,7 @@ function App() {
           {rows.map((row, index) => (
             <article className="message" key={`${row.user}-${index}`}>
               <p>
-                <strong>You:</strong> {row.user}
+                <strong>You:</strong> {highlightErrors(row.user, row.errors)}
               </p>
               <p>
                 <strong>Tutor:</strong>
@@ -119,16 +119,24 @@ function App() {
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{row.agent || ""}</ReactMarkdown>
               </div>
               {row.errors?.length > 0 ? (
-                <>
-                  <p>
-                    <strong>Correction:</strong> {row.corrected}
-                  </p>
-                  <ul>
-                    {row.errors.map((item, itemIndex) => (
-                      <li key={`${item}-${itemIndex}`}>{item}</li>
+                <table className="error-table">
+                  <thead>
+                    <tr>
+                      <th>Error</th>
+                      <th>Correction</th>
+                      <th>Why</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {row.errors.map((err, errIndex) => (
+                      <tr key={errIndex}>
+                        <td><span className="error-fragment">{err.fragment}</span></td>
+                        <td><span className="correction-fragment">{err.correction}</span></td>
+                        <td>{err.description}</td>
+                      </tr>
                     ))}
-                  </ul>
-                </>
+                  </tbody>
+                </table>
               ) : null}
             </article>
           ))}
@@ -157,6 +165,26 @@ function App() {
       </section>
     </main>
   );
+}
+
+function highlightErrors(text, errors) {
+  if (!errors?.length) return text;
+  const parts = [];
+  let remaining = text;
+  let keyIndex = 0;
+  for (const err of errors) {
+    const idx = remaining.indexOf(err.fragment);
+    if (idx === -1) continue;
+    if (idx > 0) parts.push(remaining.slice(0, idx));
+    parts.push(
+      <span key={keyIndex++} className="error-fragment">
+        {err.fragment}
+      </span>
+    );
+    remaining = remaining.slice(idx + err.fragment.length);
+  }
+  if (remaining) parts.push(remaining);
+  return parts.length ? parts : text;
 }
 
 async function extractErrorDetail(response) {

@@ -28,7 +28,13 @@ def analyze_input(state: AgentState):
     Return JSON:
     {{
         "corrected": "the minimally corrected sentence, or the original if no errors",
-        "errors": ["brief factual explanation of each error, e.g. 'goed is not a word; past tense of go is went'"]
+        "errors": [
+            {{
+                "fragment": "the exact word or phrase from the original sentence that is wrong",
+                "correction": "the corrected word or phrase that replaces it",
+                "description": "brief factual explanation of why it is wrong"
+            }}
+        ]
     }}
     """
 

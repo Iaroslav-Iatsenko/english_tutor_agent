@@ -167,6 +167,50 @@ button.ghost {
   color: #b20032;
 }
 
+.error-fragment {
+  font-weight: 700;
+  color: var(--accent);
+  background: #ffeee8;
+  border-radius: 4px;
+  padding: 0 0.2rem;
+}
+
+.correction-fragment {
+  font-weight: 700;
+  color: #1a7a4a;
+  background: #e8f9ef;
+  border-radius: 4px;
+  padding: 0 0.2rem;
+}
+
+.error-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.7rem;
+  font-size: 0.88rem;
+}
+
+.error-table th {
+  text-align: left;
+  padding: 0.4rem 0.6rem;
+  background: #f3f6fb;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.error-table td {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--line);
+  vertical-align: top;
+  line-height: 1.4;
+}
+
+.error-table tr:nth-child(even) td {
+  background: #fafbff;
+}
+
 .empty {
   color: var(--muted);
 }
