@@ -1,0 +1,17 @@
+# Python
+tutor_agent_venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# Secrets
+.env
+
+# Editor
+.vscode/
+.idea/

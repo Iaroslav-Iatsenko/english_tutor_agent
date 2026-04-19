@@ -10,6 +10,8 @@ function App() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [tab, setTab] = useState("chat");
+  const [unreadErrors, setUnreadErrors] = useState(0);
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -60,6 +62,9 @@ function App() {
           errors: data.errors,
         },
       ]);
+      if (data.errors?.length > 0) {
+        setUnreadErrors((prev) => prev + data.errors.length);
+      }
       setMessage("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unexpected error");
@@ -91,6 +96,7 @@ function App() {
 
       setRows([]);
       setSessionId("");
+      setUnreadErrors(0);
       localStorage.removeItem("sessionId");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unexpected error");
@@ -99,13 +105,40 @@ function App() {
     }
   }
 
+  const allErrors = rows.flatMap((row) =>
+    (row.errors || []).map((err) => ({ ...err, sentence: row.user }))
+  );
+
+  function switchToErrors() {
+    setTab("errors");
+    setUnreadErrors(0);
+  }
+
   return (
     <main className="page">
       <section className="panel">
         <h1>English Tutor Agent</h1>
         <p className="subtitle">Practice naturally. Get instant corrections and brief explanations.</p>
 
-        <div className="messages">
+        <div className="tabs">
+          <button
+            type="button"
+            className={`tab-btn${tab === "chat" ? " tab-btn--active" : ""}`}
+            onClick={() => setTab("chat")}
+          >
+            Chat
+          </button>
+          <button
+            type="button"
+            className={`tab-btn${tab === "errors" ? " tab-btn--active" : ""}`}
+            onClick={switchToErrors}
+          >
+            Errors
+            {unreadErrors > 0 ? <span className="tab-badge">{unreadErrors}</span> : null}
+          </button>
+        </div>
+
+        <div className="messages" style={{ display: tab === "chat" ? "flex" : "none" }}>
           {rows.length === 0 ? <p className="empty">Your conversation will appear here.</p> : null}
           {rows.map((row, index) => (
             <article className="message" key={`${row.user}-${index}`}>
@@ -143,9 +176,38 @@ function App() {
           <div ref={bottomRef} />
         </div>
 
+        {tab === "errors" ? (
+          <div className="errors-pane">
+            {allErrors.length === 0 ? (
+              <p className="empty">No errors recorded yet.</p>
+            ) : (
+              <table className="error-table error-table--full">
+                <thead>
+                  <tr>
+                    <th>Sentence</th>
+                    <th>Error</th>
+                    <th>Correction</th>
+                    <th>Why</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {allErrors.map((err, i) => (
+                    <tr key={i}>
+                      <td>{highlightErrors(err.sentence, [err])}</td>
+                      <td><span className="error-fragment">{err.fragment}</span></td>
+                      <td><span className="correction-fragment">{err.correction}</span></td>
+                      <td>{err.description}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        ) : null}
+
         {error ? <p className="error">{error}</p> : null}
 
-        <form onSubmit={sendMessage} className="composer">
+        <form onSubmit={sendMessage} className="composer" style={{ display: tab === "chat" ? undefined : "none" }}>
           <textarea
             value={message}
             onChange={(event) => setMessage(event.target.value)}
