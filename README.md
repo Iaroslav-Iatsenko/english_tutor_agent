@@ -1,56 +1,96 @@
-# English Tutor Agent (FastAPI + React)
+# English Tutor Agent
 
-This project has been refactored into:
+An AI-powered English tutor that detects grammar, spelling, and syntax errors in real time. Chat naturally, receive instant corrections highlighted inline, and review all your mistakes in a dedicated **Errors** tab.
 
-- A `FastAPI` backend that wraps the existing LangGraph tutoring logic.
-- A `React` frontend for browser-based chat practice.
+**Stack:** FastAPI · LangGraph · OpenAI GPT-4o-mini · React · Vite · nginx · Docker
 
-## Project Layout
+---
 
-- `api.py`: FastAPI service (`/chat`, `/history/{session_id}`, `/reset`, `/health`)
-- `graph.py`, `nodes.py`, `state.py`, `memory.py`: core tutor logic
-- `frontend/`: React app (Vite)
+## Quick start (Docker)
 
-## Backend Setup
-
-1. Activate your virtual environment.
-2. Install dependencies:
+The easiest way to run the app — no Python or Node setup required.
 
 ```bash
-pip install -r requirements.txt
+cp .env.example .env
+# Open .env and set your OPENAI_API_KEY
+docker compose up --build
 ```
 
-3. Ensure your `.env` contains your OpenAI key (for example `OPENAI_API_KEY=...`).
-4. Start API server:
+App is available at `http://localhost`.
+
+---
+
+## Project layout
+
+```
+api.py            FastAPI service (/chat, /reset, /health)
+graph.py          LangGraph agent graph
+nodes.py          Analyze + respond nodes (OpenAI calls)
+state.py          AgentState TypedDict
+memory.py         In-memory session store
+requirements.txt  Python dependencies
+
+frontend/         React + Vite app
+  src/
+    App.jsx       Chat UI with inline error highlighting and Errors tab
+    styles.css
+
+Dockerfile.backend   Python 3.12-slim image
+Dockerfile.frontend  Multi-stage: Node build → nginx serve
+nginx.conf           Proxies /chat /reset /health to backend
+docker-compose.yml   Wires backend + frontend containers
+.env.example         Required environment variables
+```
+
+---
+
+## Features
+
+- **Inline highlights** — error fragments are highlighted in orange in your message
+- **Error table** — per-message 3-column table: Error · Correction · Why
+- **Errors tab** — flat view of every error from the session with unread badge
+- **Session memory** — conversation history is kept per session ID (stored in `localStorage`)
+
+---
+
+## Local development (without Docker)
+
+### Backend
 
 ```bash
+python -m venv tutor_agent_venv
+source tutor_agent_venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env   # add your OPENAI_API_KEY
 uvicorn api:app --reload --port 8001
 ```
 
-Backend runs at `http://127.0.0.1:8001`.
-
-## Frontend Setup
-
-From the `frontend/` directory:
+### Frontend
 
 ```bash
+cd frontend
 npm install
 npm run dev
 ```
 
-Frontend runs at `http://127.0.0.1:5173` and calls the backend at `http://127.0.0.1:8001` when configured below.
+Frontend runs at `http://localhost:5173` and proxies API calls to `http://localhost:8001`.
 
-Optional override:
+---
 
-```bash
-VITE_API_BASE_URL=http://127.0.0.1:8001 npm run dev
+## API reference
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/health` | Health check |
+| `POST` | `/chat` | Send a message; returns `session_id`, `response`, `corrected`, `errors` |
+| `POST` | `/reset` | Clear session state |
+
+`POST /chat` request body:
+```json
+{ "message": "Yesterday I goed to market", "session_id": null }
 ```
 
-## API Endpoints
-
-- `GET /health`: health check
-- `POST /chat`
-	- Request JSON: `{"message": "your text", "session_id": "optional-id"}`
-	- Response JSON includes `session_id`, `response`, `corrected`, `errors`, and `history`
-- `GET /history/{session_id}`: returns chat history for a session
-- `POST /reset`: clears session state (`{"session_id":"..."}`)
+`errors` in the response is a list of objects:
+```json
+[{ "fragment": "goed", "correction": "went", "description": "..." }]
+```
