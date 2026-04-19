@@ -5,16 +5,24 @@ from typing import Any
 from uuid import uuid4
 
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 
 from graph import build_graph
 
 
 load_dotenv()
 
+limiter = Limiter(key_func=get_remote_address)
+
 app = FastAPI(title="English Tutor Agent API", version="1.0.0")
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
@@ -62,7 +70,8 @@ def health() -> dict[str, str]:
 
 
 @app.post("/chat", response_model=ChatResponse)
-def chat(payload: ChatRequest) -> ChatResponse:
+@limiter.limit("20/minute")
+def chat(request: Request, payload: ChatRequest) -> ChatResponse:
     session_id = payload.session_id or str(uuid4())
 
     with _sessions_lock:
@@ -92,7 +101,8 @@ def get_history(session_id: str) -> dict[str, Any]:
 
 
 @app.post("/reset")
-def reset(payload: ResetRequest) -> dict[str, str]:
+@limiter.limit("10/minute")
+def reset(request: Request, payload: ResetRequest) -> dict[str, str]:
     with _sessions_lock:
         _sessions.pop(payload.session_id, None)
 

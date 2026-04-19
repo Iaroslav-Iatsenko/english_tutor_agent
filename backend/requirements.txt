@@ -3,5 +3,6 @@ langgraph-prebuilt
 openai
 python-dotenv
 langchain_core
+slowapi
 fastapi
 uvicorn
