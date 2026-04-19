@@ -23,16 +23,18 @@ App is available at `http://localhost`.
 ## Project layout
 
 ```
-api.py            FastAPI service (/chat, /reset, /health)
-graph.py          LangGraph agent graph
-nodes.py          Analyze + respond nodes (OpenAI calls)
-state.py          AgentState TypedDict
-memory.py         In-memory session store
-requirements.txt  Python dependencies
+backend/
+  api.py            FastAPI service (/chat, /reset, /health)
+  graph.py          LangGraph agent graph
+  nodes.py          Analyze + respond nodes (OpenAI calls)
+  state.py          AgentState TypedDict
+  memory.py         In-memory session store
+  requirements.txt  Python dependencies
+  example.ipynb     Exploration notebook
 
-frontend/         React + Vite app
+frontend/
   src/
-    App.jsx       Chat UI with inline error highlighting and Errors tab
+    App.jsx         Chat UI with inline error highlighting and Errors tab
     styles.css
 
 Dockerfile.backend   Python 3.12-slim image
@@ -60,8 +62,9 @@ docker-compose.yml   Wires backend + frontend containers
 ```bash
 python -m venv tutor_agent_venv
 source tutor_agent_venv/bin/activate
-pip install -r requirements.txt
+pip install -r backend/requirements.txt
 cp .env.example .env   # add your OPENAI_API_KEY
+cd backend
 uvicorn api:app --reload --port 8001
 ```
 
