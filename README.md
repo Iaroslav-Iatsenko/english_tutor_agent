@@ -80,6 +80,41 @@ Frontend runs at `http://localhost:5173` and proxies API calls to `http://localh
 
 ---
 
+## Deployment (AWS ECS Fargate)
+
+The app is deployed on AWS ECS Fargate behind an Application Load Balancer.
+
+**Live URL:** `http://english-tutor-alb-445723719.eu-west-1.elb.amazonaws.com`
+
+### Infrastructure
+
+| Component | Details |
+|-----------|---------|
+| ECS Cluster | `english-tutor` (Fargate, `eu-west-1`) |
+| Task | 2 containers per task (backend + frontend) sharing `localhost` networking |
+| Load Balancer | ALB → Target Group → ECS task on port 80 |
+| Secrets | `OPENAI_API_KEY` injected from AWS SSM Parameter Store |
+| Logs | CloudWatch Logs — `/ecs/english-tutor` |
+| Container Registry | Amazon ECR — `english-tutor-backend` / `english-tutor-frontend` |
+
+### CI/CD (GitHub Actions)
+
+Every push to `main` automatically:
+
+1. Builds and pushes both Docker images to ECR
+2. Forces a new ECS deployment (`update-service --force-new-deployment`)
+3. Waits for the service to stabilise (`ecs wait services-stable`)
+
+**Required GitHub secrets:**
+
+| Secret | Description |
+|--------|-------------|
+| `AWS_ACCESS_KEY_ID` | IAM user access key |
+| `AWS_SECRET_ACCESS_KEY` | IAM user secret key |
+| `AWS_REGION` | `eu-west-1` |
+
+---
+
 ## API reference
 
 | Method | Path | Description |
