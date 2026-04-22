@@ -86,6 +86,32 @@ The app is deployed on AWS ECS Fargate behind an Application Load Balancer.
 
 **Live URL:** `http://english-tutor-alb-445723719.eu-west-1.elb.amazonaws.com`
 
+### Architecture
+
+```mermaid
+graph TD
+    User["🌐 Browser"] -->|HTTP| ALB["Application Load Balancer"]
+
+    subgraph ECS ["ECS Fargate Task (shared localhost)"]
+        nginx["nginx\n(port 80)"]
+        backend["FastAPI + LangGraph\n(port 8001)"]
+        nginx -->|proxy /chat /reset /health| backend
+    end
+
+    ALB -->|port 80| nginx
+
+    backend -->|LLM calls| OpenAI["OpenAI\nGPT-4o-mini"]
+    backend -->|read secret| SSM["SSM Parameter Store\nOPENAI_API_KEY"]
+
+    ECS -->|logs| CW["CloudWatch Logs\n/ecs/english-tutor"]
+
+    subgraph CICD ["CI/CD (GitHub Actions)"]
+        GH["Push to main"] --> Build["Build & push images"]
+        Build --> ECR["Amazon ECR\nbackend / frontend"]
+        ECR --> Deploy["Force new ECS deployment"]
+    end
+```
+
 ### Infrastructure
 
 | Component | Details |
