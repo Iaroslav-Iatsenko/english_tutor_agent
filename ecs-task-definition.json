@@ -27,8 +27,7 @@
         "options": {
           "awslogs-group": "/ecs/english-tutor",
           "awslogs-region": "__REGION__",
-          "awslogs-stream-prefix": "backend",
-          "awslogs-create-group": "true"
+          "awslogs-stream-prefix": "backend"
         }
       }
     },
@@ -59,8 +58,7 @@
         "options": {
           "awslogs-group": "/ecs/english-tutor",
           "awslogs-region": "__REGION__",
-          "awslogs-stream-prefix": "frontend",
-          "awslogs-create-group": "true"
+          "awslogs-stream-prefix": "frontend"
         }
       }
     }
