@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from threading import Lock
 from typing import Any
 from uuid import uuid4
@@ -75,7 +76,11 @@ def chat(request: Request, payload: ChatRequest) -> ChatResponse:
     session_id = payload.session_id or str(uuid4())
 
     with _sessions_lock:
+        is_new = session_id not in _sessions
         state = _sessions.get(session_id, {"history": []}).copy()
+
+    if is_new:
+        print(json.dumps({"event": "new_session", "session_id": session_id}), flush=True)
 
     state["user_input"] = payload.message
     result = _graph.invoke(state)
